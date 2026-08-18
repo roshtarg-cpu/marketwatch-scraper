@@ -1,5 +1,5 @@
 import { Actor } from 'apify';
-import { CheerioCrawler, Dataset } from 'crawlee';
+import { PlaywrightCrawler, Dataset } from 'crawlee';
 
 await Actor.init();
 
@@ -16,76 +16,88 @@ const maxCount = parseInt(maxResults, 10);
 // Create proxy configuration
 const proxyConfig = await Actor.createProxyConfiguration(proxyConfiguration);
 
-// Initialize crawler
-const crawler = new CheerioCrawler({
+// Initialize crawler with Playwright (headless browser)
+const crawler = new PlaywrightCrawler({
     proxyConfiguration: proxyConfig,
     maxRequestRetries: 3,
     requestHandlerTimeoutSecs: 90,
+    launchContext: {
+        launchOptions: {
+            headless: true,
+        },
+    },
     
-    async requestHandler({ request, $, log }) {
+    async requestHandler({ request, page, log }) {
         const url = request.url;
         const symbol = request.userData.symbol;
         
         log.info(`Scraping ${symbol} from ${url}`);
         
         try {
+            // Wait for page to load
+            await page.waitForLoadState('networkidle');
+            
             // Extract stock data
-            const title = $('title').text().trim();
-            const h1 = $('h1.company__name').text().trim();
+            const title = await page.title();
             
-            // Price data - try multiple selectors
-            let price = null;
-            let change = null;
-            let changePercent = null;
-            
-            // Method 1: bg-quote element
-            price = $('.bg-quote').text().trim() || null;
-            change = $('.change--point--q').text().trim() || null;
-            changePercent = $('.change--percent--q').text().trim() || null;
-            
-            // Method 2: intraday__price
-            if (!price) {
-                price = $('.intraday__price .value').text().trim() || null;
-            }
-            
-            // Method 3: J-quote
-            if (!price) {
-                const quoteMeta = $('meta[name="price"]').attr('content');
-                if (quoteMeta) price = quoteMeta;
-            }
-            
-            // Extract company info
-            const companyName = h1 || $('h1').first().text().trim() || null;
-            
-            // Extract latest news headlines
-            const newsHeadlines = [];
-            $('.article__headline, .article-headline a, h3.article__headline a').each((i, el) => {
-                if (i < 5) {
-                    const headline = $(el).text().trim();
-                    const link = $(el).attr('href') || $(el).closest('a').attr('href');
-                    if (headline) {
-                        newsHeadlines.push({
-                            headline,
-                            url: link ? (link.startsWith('http') ? link : `https://www.marketwatch.com${link}`) : null
-                        });
+            // Extract data using page.evaluate
+            const result = await page.evaluate((sym) => {
+                const getText = (selector) => {
+                    const el = document.querySelector(selector);
+                    return el ? el.textContent.trim() : null;
+                };
+                
+                const getAttr = (selector, attr) => {
+                    const el = document.querySelector(selector);
+                    return el ? el.getAttribute(attr) : null;
+                };
+                
+                // Company name
+                const companyName = getText('h1.company__name') || getText('h1') || null;
+                
+                // Price data - try multiple selectors
+                let price = getText('.bg-quote') || 
+                           getText('.intraday__price .value') || 
+                           getAttr('meta[name="price"]', 'content') || 
+                           null;
+                
+                let change = getText('.change--point--q') || null;
+                let changePercent = getText('.change--percent--q') || null;
+                
+                // Extract news headlines
+                const newsHeadlines = [];
+                document.querySelectorAll('.article__headline, .article-headline a, h3.article__headline a').forEach((el, i) => {
+                    if (i < 5) {
+                        const headline = el.textContent.trim();
+                        const link = el.getAttribute('href') || el.closest('a')?.getAttribute('href');
+                        if (headline) {
+                            newsHeadlines.push({
+                                headline,
+                                url: link ? (link.startsWith('http') ? link : `https://www.marketwatch.com${link}`) : null
+                            });
+                        }
                     }
-                }
-            });
+                });
+                
+                return {
+                    companyName,
+                    price,
+                    change,
+                    changePercent,
+                    newsHeadlines: newsHeadlines.length > 0 ? newsHeadlines : null,
+                };
+            }, symbol);
             
-            // Build result
-            const result = {
+            // Build final result
+            const finalResult = {
                 symbol,
-                companyName,
-                price,
-                change,
-                changePercent,
-                newsHeadlines: newsHeadlines.length > 0 ? newsHeadlines : null,
+                ...result,
                 url,
                 scrapedAt: new Date().toISOString(),
             };
             
             // Push to dataset immediately
-            await Dataset.pushData(result);
+            await Dataset.pushData(finalResult);
             count++;
             
             if (count % 10 === 0) {

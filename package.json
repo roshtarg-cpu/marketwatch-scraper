@@ -5,7 +5,8 @@
   "description": "MarketWatch stock quotes, market data, and financial news scraper",
   "dependencies": {
     "apify": "^3.0.0",
-    "crawlee": "^3.0.0"
+    "crawlee": "^3.0.0",
+    "playwright": "^1.40.0"
   },
   "scripts": {
     "start": "node src/main.js"
