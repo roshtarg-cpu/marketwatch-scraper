@@ -1,5 +1,6 @@
 import { Actor } from 'apify';
 import { PlaywrightCrawler, Dataset } from 'crawlee';
+import { firefox } from 'playwright';
 
 await Actor.init();
 
@@ -7,13 +8,13 @@ const input = await Actor.getInput() || {};
 const {
     stockSymbols = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA'],
     maxResults = 50,
-    proxyConfiguration,
+    proxyConfiguration = { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
 } = input;
 
 let count = 0;
 const maxCount = parseInt(maxResults, 10);
 
-// Create proxy configuration
+// Create proxy configuration with RESIDENTIAL proxies (better for anti-bot)
 const proxyConfig = await Actor.createProxyConfiguration(proxyConfiguration);
 
 // Initialize crawler with Playwright (headless browser)
@@ -22,10 +23,19 @@ const crawler = new PlaywrightCrawler({
     maxRequestRetries: 3,
     requestHandlerTimeoutSecs: 90,
     launchContext: {
+        launcher: firefox, // Use Firefox instead of Chromium
         launchOptions: {
             headless: true,
         },
     },
+    preNavigationHooks: [
+        async ({ page }, gotoOptions) => {
+            // Set realistic viewport
+            await page.setViewportSize({ width: 1920, height: 1080 });
+            // Add extra delay to appear more human
+            gotoOptions.waitUntil = 'networkidle';
+        },
+    ],
     
     async requestHandler({ request, page, log }) {
         const url = request.url;
@@ -36,6 +46,9 @@ const crawler = new PlaywrightCrawler({
         try {
             // Wait for page to load
             await page.waitForLoadState('networkidle');
+            
+            // Additional wait to let any dynamic content load
+            await page.waitForTimeout(2000);
             
             // Extract stock data
             const title = await page.title();
