@@ -1,0 +1,15 @@
+{
+  "name": "marketwatch-scraper",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "MarketWatch stock quotes, market data, and financial news scraper",
+  "dependencies": {
+    "apify": "^3.0.0",
+    "crawlee": "^3.0.0"
+  },
+  "scripts": {
+    "start": "node src/main.js"
+  },
+  "author": "roshtarg",
+  "license": "Apache-2.0"
+}
