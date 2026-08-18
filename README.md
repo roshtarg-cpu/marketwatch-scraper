@@ -70,10 +70,15 @@ Each result includes:
 
 ✅ **No Rate Limits**: Scrape as many stocks as you need  
 ✅ **Real-Time Data**: Get current market prices and news  
-✅ **Residential Proxies**: Reliable access with Apify proxy  
+✅ **Bot Protection Bypass**: Uses Firefox browser with residential proxies to bypass MarketWatch anti-bot protection  
+✅ **Residential Proxies Required**: MarketWatch requires residential proxies (included in default config)  
 ✅ **Error Handling**: Graceful fallbacks for missing data  
 ✅ **Structured Output**: Clean JSON perfect for analysis  
 ✅ **News Integration**: Latest headlines with each stock quote
+
+## Important Note
+
+⚠️ **Residential Proxies Required**: MarketWatch has bot protection that blocks datacenter IPs. This actor uses residential proxies by default (configured in the input). Make sure you have Apify residential proxy credits.
 
 ## Pricing
 
