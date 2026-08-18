@@ -7,44 +7,42 @@
   "buildTag": "latest",
   "dockerfile": "./Dockerfile",
   "output": {
-    "schema": {
-      "type": "object",
-      "properties": {
-        "symbol": {
-          "type": "string",
-          "description": "Stock ticker symbol",
-          "template": "{{{symbol}}}"
-        },
-        "companyName": {
-          "type": "string",
-          "description": "Company name",
-          "template": "{{{companyName}}}"
-        },
-        "price": {
-          "type": "string",
-          "description": "Current stock price",
-          "template": "{{{price}}}"
-        },
-        "change": {
-          "type": "string",
-          "description": "Price change in points",
-          "template": "{{{change}}}"
-        },
-        "changePercent": {
-          "type": "string",
-          "description": "Price change percentage",
-          "template": "{{{changePercent}}}"
-        },
-        "url": {
-          "type": "string",
-          "description": "Source URL",
-          "template": "{{{url}}}"
-        },
-        "scrapedAt": {
-          "type": "string",
-          "description": "Timestamp",
-          "template": "{{{scrapedAt}}}"
-        }
+    "actorOutputSchemaVersion": 1,
+    "properties": {
+      "symbol": {
+        "type": "string",
+        "description": "Stock ticker symbol",
+        "template": "{{{symbol}}}"
+      },
+      "companyName": {
+        "type": "string",
+        "description": "Company name",
+        "template": "{{{companyName}}}"
+      },
+      "price": {
+        "type": "string",
+        "description": "Current stock price",
+        "template": "{{{price}}}"
+      },
+      "change": {
+        "type": "string",
+        "description": "Price change in points",
+        "template": "{{{change}}}"
+      },
+      "changePercent": {
+        "type": "string",
+        "description": "Price change percentage",
+        "template": "{{{changePercent}}}"
+      },
+      "url": {
+        "type": "string",
+        "description": "Source URL",
+        "template": "{{{url}}}"
+      },
+      "scrapedAt": {
+        "type": "string",
+        "description": "Timestamp",
+        "template": "{{{scrapedAt}}}"
       }
     }
   }
