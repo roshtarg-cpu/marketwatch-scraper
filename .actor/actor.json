@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "marketwatch-scraper",
-  "title": "MarketWatch Stock Scraper — Real-Time Quotes & News",
+  "title": "MarketWatch Stock Scraper \u2014 Real-Time Quotes & News",
   "description": "Scrape real-time stock quotes, price changes, and latest financial news from MarketWatch.com. Get market data for any stock symbol with accurate pricing and related news headlines. Works with Claude, ChatGPT, and AI agents via Apify MCP.",
   "version": "0.1",
   "buildTag": "latest",
@@ -43,6 +43,29 @@
         "type": "string",
         "description": "Timestamp",
         "template": "{{{scrapedAt}}}"
+      }
+    }
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "fields": {},
+      "views": {
+        "overview": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "symbol",
+              "companyName",
+              "price",
+              "change",
+              "changePercent",
+              "newsHeadlines",
+              "url",
+              "scrapedAt"
+            ]
+          }
+        }
       }
     }
   }
